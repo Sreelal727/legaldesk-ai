@@ -1,3 +1,9 @@
+export interface PendingTask {
+  task: string;
+  deadline: string;
+  priority: "High" | "Medium" | "Low";
+}
+
 export interface Case {
   clientName: string;
   caseNumber: string;
@@ -8,6 +14,7 @@ export interface Case {
   opposingParty: string;
   advocate: string;
   description: string;
+  pendingTasks: PendingTask[];
 }
 
 export const mockCases: Case[] = [
@@ -22,6 +29,11 @@ export const mockCases: Case[] = [
     advocate: "Adv. Priya Nair",
     description:
       "Dispute over ancestral property in Thrissur. Partition suit filed by client claiming 1/3rd share of family property. Respondent denies client's claim over the northern plot.",
+    pendingTasks: [
+      { task: "File written arguments before hearing", deadline: "2026-03-03", priority: "High" },
+      { task: "Collect revenue records from Thrissur sub-registrar", deadline: "2026-03-01", priority: "High" },
+      { task: "Follow up with surveyor for property measurement report", deadline: "2026-02-28", priority: "Medium" },
+    ],
   },
   {
     clientName: "Meera Thomas",
@@ -34,6 +46,10 @@ export const mockCases: Case[] = [
     advocate: "Adv. Priya Nair",
     description:
       "Client issued cheque of ₹5,00,000 which was dishonoured. Complaint filed by KSFE under Section 138 of NI Act. Arguments completed, judgment reserved.",
+    pendingTasks: [
+      { task: "Prepare for judgment — brief client on possible outcomes", deadline: "2026-03-10", priority: "High" },
+      { task: "Draft settlement proposal in case of adverse judgment", deadline: "2026-03-11", priority: "Medium" },
+    ],
   },
   {
     clientName: "Anil Krishnan",
@@ -46,6 +62,11 @@ export const mockCases: Case[] = [
     advocate: "Adv. Deepa Mohan",
     description:
       "Mutual consent divorce petition. Parties have agreed on alimony and child custody terms. Second motion hearing pending after 6-month cooling period.",
+    pendingTasks: [
+      { task: "Prepare second motion petition", deadline: "2026-03-05", priority: "High" },
+      { task: "Get client signature on final alimony agreement", deadline: "2026-03-06", priority: "High" },
+      { task: "Collect child custody consent affidavit from both parties", deadline: "2026-03-07", priority: "Medium" },
+    ],
   },
   {
     clientName: "Fatima Begum",
@@ -58,6 +79,10 @@ export const mockCases: Case[] = [
     advocate: "Adv. Priya Nair",
     description:
       "Writ petition challenging acquisition of client's commercial property in Kozhikode for road widening. Seeking fair market compensation under RFCTLARR Act.",
+    pendingTasks: [
+      { task: "File additional affidavit with property valuation report", deadline: "2026-03-25", priority: "High" },
+      { task: "Obtain certified copy of acquisition notification from Collector's office", deadline: "2026-03-15", priority: "Medium" },
+    ],
   },
   {
     clientName: "George Varghese",
@@ -70,6 +95,11 @@ export const mockCases: Case[] = [
     advocate: "Adv. Deepa Mohan",
     description:
       "Client charged under Section 279 and 338 IPC for rash driving causing grievous hurt. Accident occurred on NH-66 near Alappuzha. Three prosecution witnesses examined so far.",
+    pendingTasks: [
+      { task: "Prepare list of defence witnesses", deadline: "2026-03-10", priority: "High" },
+      { task: "Collect medical records from Alappuzha General Hospital", deadline: "2026-03-08", priority: "Medium" },
+      { task: "File application to recall prosecution witness for cross-examination", deadline: "2026-03-12", priority: "Medium" },
+    ],
   },
   {
     clientName: "Sarita Devi",
@@ -82,6 +112,10 @@ export const mockCases: Case[] = [
     advocate: "Adv. Priya Nair",
     description:
       "Execution of money decree of ₹12,00,000 obtained against respondent. Attachment of respondent's property in Palakkad ordered. Respondent seeking time to pay.",
+    pendingTasks: [
+      { task: "File objection to respondent's application for time extension", deadline: "2026-03-18", priority: "High" },
+      { task: "Follow up with court bailiff on property attachment status", deadline: "2026-03-15", priority: "Medium" },
+    ],
   },
   {
     clientName: "Vineeth Menon",
@@ -94,6 +128,10 @@ export const mockCases: Case[] = [
     advocate: "Adv. Deepa Mohan",
     description:
       "Client booked a flat in Kochi for ₹85,00,000. Builder delayed possession by 2 years. Seeking compensation, interest, and possession. Builder's counter filed claiming force majeure.",
+    pendingTasks: [
+      { task: "File reply to builder's counter-affidavit", deadline: "2026-03-20", priority: "High" },
+      { task: "Collect RERA registration documents", deadline: "2026-03-15", priority: "Medium" },
+    ],
   },
   {
     clientName: "Amina Fathima",
@@ -106,6 +144,10 @@ export const mockCases: Case[] = [
     advocate: "Adv. Priya Nair",
     description:
       "Eviction petition filed by landlord (client) against tenant for non-payment of rent for 8 months. Monthly rent ₹15,000. Total arrears ₹1,20,000. Tenant yet to file reply.",
+    pendingTasks: [
+      { task: "File application for interim rent deposit order", deadline: "2026-03-08", priority: "High" },
+      { task: "Prepare evidence of rent demand notices sent to tenant", deadline: "2026-03-05", priority: "Medium" },
+    ],
   },
 ];
 
@@ -123,6 +165,25 @@ export function getCaseSummaries(): string {
    Details: ${c.description}`
     )
     .join("\n\n");
+}
+
+export function getDailyTaskSummary(): string {
+  const allTasks: { task: string; deadline: string; priority: string; client: string; caseNumber: string }[] = [];
+  for (const c of mockCases) {
+    for (const t of c.pendingTasks) {
+      allTasks.push({ ...t, client: c.clientName, caseNumber: c.caseNumber });
+    }
+  }
+  allTasks.sort((a, b) => {
+    const priorityOrder = { High: 0, Medium: 1, Low: 2 };
+    const pa = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
+    const pb = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
+    if (pa !== pb) return pa - pb;
+    return a.deadline.localeCompare(b.deadline);
+  });
+  return allTasks
+    .map((t) => `- [${t.priority}] ${t.task} — ${t.client} (${t.caseNumber}) — Deadline: ${t.deadline}`)
+    .join("\n");
 }
 
 export function getUpcomingHearings(): string {

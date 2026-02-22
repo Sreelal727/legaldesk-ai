@@ -11,8 +11,12 @@ const actions = [
     prompt: "Show me the status of all active cases",
   },
   {
-    label: "📅 Upcoming Hearings",
+    label: "📅 Hearings",
     prompt: "List all upcoming hearings sorted by date",
+  },
+  {
+    label: "✅ Today's Tasks",
+    prompt: "Show me today's pending tasks across all cases, sorted by priority",
   },
   {
     label: "🔄 IPC → BNS",
@@ -24,11 +28,23 @@ const actions = [
       "Analyze the strength of this case: My client was charged under IPC 420 for allegedly cheating a buyer in a property sale in Ernakulam. The sale deed was executed but the property had a prior encumbrance which was not disclosed. The buyer paid ₹45 lakhs. My client claims he was unaware of the encumbrance as it was created by his late father. We have the original sale deed, tax receipts, and two witnesses who can testify the client had no knowledge.",
   },
   {
-    label: "📝 Draft Legal Notice",
+    label: "⏰ Limitation",
+    prompt: "What is the limitation period for filing a cheque bounce case under Section 138 NI Act? The cheque was returned on 15 January 2026.",
+  },
+  {
+    label: "💰 Court Fee",
+    prompt: "Calculate court fee for a property suit valued at ₹25,00,000 in Kerala District Court",
+  },
+  {
+    label: "🏠 Stamp Duty",
+    prompt: "Calculate stamp duty and registration fee for a property sale deed in Kerala for ₹50,00,000",
+  },
+  {
+    label: "📝 Legal Notice",
     prompt: "Draft a legal notice for non-payment of rent by a tenant",
   },
   {
-    label: "📄 Draft Vakalatnama",
+    label: "📄 Vakalatnama",
     prompt: "Draft a Vakalatnama for a new client",
   },
   {
@@ -38,6 +54,22 @@ const actions = [
   {
     label: "🏠 Rent Agreement",
     prompt: "Draft a rental agreement for a residential property in Kochi",
+  },
+  {
+    label: "👤 New Client",
+    prompt: "Generate a client intake questionnaire for a new property dispute case",
+  },
+  {
+    label: "📨 Follow-up",
+    prompt: "Draft a follow-up letter to client Rajesh Kumar asking him to submit the pending revenue records for his property case",
+  },
+  {
+    label: "🧾 Fee Receipt",
+    prompt: "Generate a fee receipt for ₹25,000 consultation fee received from Vineeth Menon for case OP 112/2026, paid via bank transfer",
+  },
+  {
+    label: "📅 Court Holiday",
+    prompt: "Is court working on March 14, 2026? Also show me the next 5 court holidays.",
   },
   {
     label: "🇮🇳 Malayalam",
