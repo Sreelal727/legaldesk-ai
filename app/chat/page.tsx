@@ -6,6 +6,8 @@ import type { UIMessage } from "ai";
 import ChatWindow from "@/components/chat-window";
 import ChatInput from "@/components/chat-input";
 import QuickActions from "@/components/quick-actions";
+import QuickActionForm from "@/components/quick-action-form";
+import type { QuickActionFormConfig } from "@/lib/quick-action-forms";
 
 const STORAGE_KEY = "legaldesk-chat-messages";
 
@@ -45,12 +47,26 @@ export default function ChatPage() {
   }, [messages, status]);
 
   const [input, setInput] = useState("");
+  const [activeForm, setActiveForm] = useState<QuickActionFormConfig | null>(null);
   const isLoading = status === "streaming" || status === "submitted";
 
   const handleSend = (text: string) => {
     if (!text.trim() || isLoading) return;
     sendMessage({ text });
     setInput("");
+  };
+
+  const handleFormOpen = (config: QuickActionFormConfig) => {
+    setActiveForm(config);
+  };
+
+  const handleFormSubmit = (prompt: string) => {
+    setActiveForm(null);
+    handleSend(prompt);
+  };
+
+  const handleFormClose = () => {
+    setActiveForm(null);
   };
 
   const handleClearChat = () => {
@@ -104,7 +120,7 @@ export default function ChatPage() {
       <ChatWindow messages={messages} isLoading={isLoading} />
 
       {/* Quick Actions */}
-      <QuickActions onAction={handleSend} isLoading={isLoading} />
+      <QuickActions onAction={handleSend} onFormOpen={handleFormOpen} isLoading={isLoading} />
 
       {/* Input Bar */}
       <ChatInput
@@ -113,6 +129,16 @@ export default function ChatPage() {
         onSend={handleSend}
         isLoading={isLoading}
       />
+
+      {/* Quick Action Form Modal */}
+      {activeForm && (
+        <QuickActionForm
+          config={activeForm}
+          onSubmit={handleFormSubmit}
+          onClose={handleFormClose}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }
