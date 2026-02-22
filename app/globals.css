@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --header-green: #075e54;
+  --header-green-light: #128c7e;
+  --chat-bg: #ece5dd;
+  --user-bubble: #dcf8c6;
+  --ai-bubble: #ffffff;
+  --input-bg: #f0f0f0;
+  --text-primary: #111b21;
+  --text-secondary: #667781;
+  --accent: #25d366;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--chat-bg);
+  color: var(--text-primary);
+}
+
+/* Hide scrollbar but allow scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Message animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-animate {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Typing indicator */
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.3; }
+  40% { opacity: 1; }
+}
+
+.typing-dot {
+  animation: blink 1.4s infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Markdown styling in messages */
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+  font-weight: 700;
+  margin: 0.5em 0 0.3em;
+}
+.message-content h1 { font-size: 1.1em; }
+.message-content h2 { font-size: 1.05em; }
+.message-content h3 { font-size: 1em; }
+
+.message-content p {
+  margin: 0.4em 0;
+}
+
+.message-content ul, .message-content ol {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+
+.message-content li {
+  margin: 0.15em 0;
+}
+
+.message-content strong {
+  font-weight: 600;
+}
+
+.message-content pre {
+  background: #f4f4f4;
+  border-radius: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  font-size: 0.85em;
+  margin: 0.4em 0;
+}
+
+.message-content code {
+  background: #f4f4f4;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.9em;
+}
+
+.message-content hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 0.6em 0;
+}
