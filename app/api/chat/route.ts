@@ -125,7 +125,7 @@ export async function POST(req: Request) {
     model,
     system: systemPrompt,
     messages: modelMessages,
-    maxTokens: 4096,
+    maxOutputTokens: 4096,
   });
 
   return result.toUIMessageStreamResponse();
