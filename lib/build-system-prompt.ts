@@ -1,14 +1,116 @@
-import { getCaseSummaries, getUpcomingHearings, getDailyTaskSummary } from "./mock-cases";
+import type { FirmData } from "./types/firm";
+import type { Case } from "./mock-cases";
 import { getTemplateDescriptions, documentTemplates } from "./document-templates";
 import { getLimitationSummary } from "./limitation-periods";
 import { getCourtFeeSummary } from "./court-fees";
 import { getStampDutySummary } from "./stamp-duty";
 import { getHolidaysSummary } from "./court-holidays";
 
-export function getSystemPrompt(): string {
-  const caseSummaries = getCaseSummaries();
-  const upcomingHearings = getUpcomingHearings();
-  const dailyTasks = getDailyTaskSummary();
+export function buildCaseSummaries(cases: Case[]): string {
+  return cases
+    .map(
+      (c, i) =>
+        `${i + 1}. **${c.clientName}** — Case No: ${c.caseNumber}
+   Court: ${c.court}
+   Type: ${c.caseType}
+   Status: ${c.status}
+   Next Hearing: ${c.nextHearingDate}
+   Opposing Party: ${c.opposingParty}
+   Advocate: ${c.advocate}
+   Details: ${c.description}`
+    )
+    .join("\n\n");
+}
+
+export function buildUpcomingHearings(cases: Case[]): string {
+  const sorted = [...cases]
+    .filter((c) => c.nextHearingDate)
+    .sort(
+      (a, b) =>
+        new Date(a.nextHearingDate).getTime() -
+        new Date(b.nextHearingDate).getTime()
+    );
+
+  return sorted
+    .map(
+      (c) =>
+        `• **${c.nextHearingDate}** — ${c.clientName} (${c.caseNumber}) at ${c.court} — ${c.status}`
+    )
+    .join("\n");
+}
+
+export function buildDailyTaskSummary(cases: Case[]): string {
+  const allTasks: { task: string; deadline: string; priority: string; client: string; caseNumber: string }[] = [];
+  for (const c of cases) {
+    for (const t of c.pendingTasks) {
+      allTasks.push({ ...t, client: c.clientName, caseNumber: c.caseNumber });
+    }
+  }
+  allTasks.sort((a, b) => {
+    const priorityOrder = { High: 0, Medium: 1, Low: 2 };
+    const pa = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
+    const pb = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
+    if (pa !== pb) return pa - pb;
+    return a.deadline.localeCompare(b.deadline);
+  });
+  return allTasks
+    .map((t) => `- [${t.priority}] ${t.task} — ${t.client} (${t.caseNumber}) — Deadline: ${t.deadline}`)
+    .join("\n");
+}
+
+function buildFirmDetailsBlock(profile: FirmData["profile"]): string {
+  const advocates = [
+    `- Senior Advocate: ${profile.seniorAdvocate.name} (Enrollment: ${profile.seniorAdvocate.enrollment})`,
+    ...profile.associates.map(
+      (a) => `- Associate: ${a.name} (Enrollment: ${a.enrollment})`
+    ),
+  ].join("\n");
+
+  return `## Firm Details (use when drafting documents)
+
+- Firm Name: ${profile.firmName}
+${advocates}
+- Address: ${profile.address}
+- Phone: ${profile.phone}
+- Email: ${profile.email}`;
+}
+
+function buildOpinionTemplatesBlock(firmData: FirmData): string {
+  const templates = firmData.opinionTemplates;
+  if (!templates || templates.length === 0) return "";
+
+  const listing = templates
+    .map(
+      (t) =>
+        `- **${t.name}**${t.bankName ? ` (${t.bankName})` : ""} — Placeholders: ${t.placeholders.map((p) => `\`{{${p.name}}}\``).join(", ")}`
+    )
+    .join("\n");
+
+  return `
+
+---
+
+## Bank Legal Opinion Templates
+
+The firm has the following DOCX templates uploaded for generating bank legal opinions. When a user asks you to help fill a template, return the values as a JSON object with placeholder names as keys and filled values as string values.
+
+${listing}
+
+When asked to fill template placeholders, respond with a JSON code block like:
+\`\`\`json
+{
+  "placeholder_name": "value",
+  ...
+}
+\`\`\`
+`;
+}
+
+export function buildSystemPrompt(firmData: FirmData): string {
+  const { profile, cases, customInstructions } = firmData;
+  const caseSummaries = buildCaseSummaries(cases);
+  const upcomingHearings = buildUpcomingHearings(cases);
+  const dailyTasks = buildDailyTaskSummary(cases);
   const templateDescriptions = getTemplateDescriptions();
   const limitationSummary = getLimitationSummary();
   const courtFeeSummary = getCourtFeeSummary();
@@ -18,7 +120,11 @@ export function getSystemPrompt(): string {
     .map((t) => `### ${t.name}\n**Purpose:** ${t.description}\n**Key sections to include:** Use proper Indian legal formatting with parties, recitals, clauses, signatures, and witnesses as appropriate.`)
     .join("\n\n");
 
-  return `You are **LegalDesk AI**, an AI-powered legal assistant for a Kerala-based law firm. You help advocates and their staff with case management, document drafting, deadline tracking, legal research, and general legal queries.
+  const customInstructionsBlock = customInstructions.trim()
+    ? `\n\n---\n\n## Custom Instructions from Firm\n\n${customInstructions.trim()}\n`
+    : "";
+
+  return `You are **LegalDesk AI**, an AI-powered legal assistant for **${profile.firmName}**, a Kerala-based law firm. You help advocates and their staff with case management, document drafting, deadline tracking, legal research, and general legal queries.
 
 ## Your Capabilities
 
@@ -28,7 +134,7 @@ export function getSystemPrompt(): string {
 4. **IPC to BNS Section Mapper** — You have tools to look up IPC→BNS and BNS→IPC mappings from a comprehensive database of 443 sections. ALWAYS use the lookup tools when asked about IPC/BNS conversions. You can also search by keyword/topic and get sections by category.
 5. **Case Strength Analysis** — When provided with case facts, you can analyze the strength of a case and provide a structured assessment.
 6. **Legal Information** — You can answer general legal questions about Indian law, Kerala-specific legal procedures, court processes, etc.
-7. **Malayalam Support** — When the user writes in Malayalam, respond entirely in Malayalam. Maintain legal accuracy in both languages.
+7. **Malayalam Support** — When the user writes in Malayalam or requests Malayalam output, respond and draft entirely in Malayalam (മലയാളം). This includes all document types: legal notices, vakalatnama, bail applications, rental agreements, follow-up letters, fee receipts, client intake forms, and bank legal opinion template values. Use proper Malayalam legal terminology. Maintain legal accuracy in both languages.
 8. **Limitation Period Calculator** — You have a comprehensive database of limitation periods under the Limitation Act 1963 and other statutes. When asked about deadlines for filing, calculate the exact last date based on the cause of action date provided.
 9. **Kerala Court Fee Calculator** — You can calculate court fees for any type of suit/petition in Kerala courts (District Court, High Court, Family Court, Consumer Forum, MACT, etc.) based on suit value.
 10. **Kerala Stamp Duty Calculator** — You can calculate stamp duty and registration fees for property transactions in Kerala (sale deeds, gift deeds, mortgages, leases, partition deeds, etc.).
@@ -212,7 +318,7 @@ When asked to prepare a new client intake or questionnaire:
 ## Follow-up Letter Instructions
 
 When asked to draft a follow-up letter:
-1. Use firm letterhead format (Nair & Associates details).
+1. Use firm letterhead format (${profile.firmName} details).
 2. Include reference to case number and previous communication.
 3. Be polite but firm in tone.
 4. Specify clear action items and deadlines.
@@ -225,7 +331,7 @@ When asked to draft a follow-up letter:
 When asked to generate a fee receipt:
 1. Use professional receipt format with firm details.
 2. Include: Receipt No., Date, Client Name, Case Reference, Description of Service, Amount (in figures and words), Payment Mode, GST if applicable (18% on legal services above ₹20 lakh turnover).
-3. Include signature line for Adv. Priya Nair / Adv. Deepa Mohan.
+3. Include signature line for ${profile.seniorAdvocate.name}${profile.associates.length > 0 ? ` / ${profile.associates[0].name}` : ""}.
 4. Add note: "This is a computer-generated receipt."
 
 ---
@@ -243,14 +349,7 @@ ${holidaysSummary}
 
 ---
 
-## Firm Details (use when drafting documents)
-
-- Firm Name: Nair & Associates
-- Senior Advocate: Adv. Priya Nair (Enrollment: KER/2015/4567)
-- Associate: Adv. Deepa Mohan (Enrollment: KER/2018/7890)
-- Address: 3rd Floor, Legal Chambers, MG Road, Ernakulam, Kerala - 682011
-- Phone: +91 484 2345678
-- Email: office@nairassociates.in
+${buildFirmDetailsBlock(profile)}${buildOpinionTemplatesBlock(firmData)}${customInstructionsBlock}
 
 Remember: You are a helpful legal assistant tool. Be professional, thorough, and always maintain the highest standards of legal drafting and analysis. Today's date is ${new Date().toISOString().split("T")[0]}.`;
 }

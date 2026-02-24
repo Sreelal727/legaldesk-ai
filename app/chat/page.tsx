@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
-import type { UIMessage } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import ChatWindow from "@/components/chat-window";
 import ChatInput from "@/components/chat-input";
 import QuickActions from "@/components/quick-actions";
 import QuickActionForm from "@/components/quick-action-form";
 import type { QuickActionFormConfig } from "@/lib/quick-action-forms";
+import OpinionGenerator from "@/components/opinion-generator";
+import { loadFirmData } from "@/lib/firm-store";
+import Link from "next/link";
 
 const STORAGE_KEY = "legaldesk-chat-messages";
 
@@ -31,9 +34,18 @@ function saveMessages(messages: UIMessage[]) {
 }
 
 export default function ChatPage() {
+  const [firmData] = useState(() => loadFirmData());
   const [initialMessages] = useState<UIMessage[]>(() => loadMessages());
+  const [transport] = useState(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        body: () => ({ firmData: loadFirmData() }),
+      })
+  );
   const { messages, sendMessage, setMessages, status } = useChat({
     messages: initialMessages,
+    transport,
   });
 
   // Save messages to localStorage whenever they change
@@ -48,6 +60,7 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [activeForm, setActiveForm] = useState<QuickActionFormConfig | null>(null);
+  const [showOpinionGenerator, setShowOpinionGenerator] = useState(false);
   const isLoading = status === "streaming" || status === "submitted";
 
   const handleSend = (text: string) => {
@@ -93,7 +106,7 @@ export default function ChatPage() {
             LegalDesk AI
           </h1>
           <p className="text-xs text-white/70 leading-tight">
-            Nair &amp; Associates
+            {firmData.profile.firmName}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -101,6 +114,15 @@ export default function ChatPage() {
             <div className="w-2 h-2 rounded-full bg-[#25d366]" />
             <span className="text-xs text-white/70">Online</span>
           </div>
+          <Link
+            href="/settings"
+            title="Settings"
+            className="p-1.5 rounded-full hover:bg-white/15 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+            </svg>
+          </Link>
           {messages.length > 0 && (
             <button
               onClick={handleClearChat}
@@ -120,7 +142,14 @@ export default function ChatPage() {
       <ChatWindow messages={messages} isLoading={isLoading} />
 
       {/* Quick Actions */}
-      <QuickActions onAction={handleSend} onFormOpen={handleFormOpen} isLoading={isLoading} />
+      <QuickActions
+        onAction={handleSend}
+        onFormOpen={handleFormOpen}
+        onOpinionOpen={() => setShowOpinionGenerator(true)}
+        isLoading={isLoading}
+        cases={firmData.cases}
+        opinionTemplates={firmData.opinionTemplates}
+      />
 
       {/* Input Bar */}
       <ChatInput
@@ -137,6 +166,18 @@ export default function ChatPage() {
           onSubmit={handleFormSubmit}
           onClose={handleFormClose}
           isLoading={isLoading}
+        />
+      )}
+
+      {/* Opinion Generator Modal */}
+      {showOpinionGenerator && (
+        <OpinionGenerator
+          templates={firmData.opinionTemplates}
+          onClose={() => setShowOpinionGenerator(false)}
+          onAIFill={(prompt) => {
+            setShowOpinionGenerator(false);
+            handleSend(prompt);
+          }}
         />
       )}
     </div>

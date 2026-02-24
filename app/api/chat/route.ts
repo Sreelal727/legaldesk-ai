@@ -1,6 +1,8 @@
 import { streamText } from "ai";
 import { model } from "@/lib/gemini";
-import { getSystemPrompt } from "@/lib/system-prompt";
+import { buildSystemPrompt } from "@/lib/build-system-prompt";
+import { getDefaultFirmData } from "@/lib/firm-store";
+import type { FirmData } from "@/lib/types/firm";
 import {
   lookupByIPC,
   lookupByBNS,
@@ -111,7 +113,8 @@ function detectAndInjectBNSData(userText: string): string {
 }
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, firmData: rawFirmData } = await req.json();
+  const firmData: FirmData = rawFirmData ?? getDefaultFirmData();
   const modelMessages = toModelMessages(messages);
 
   // Get the last user message and inject BNS data if relevant
@@ -119,13 +122,13 @@ export async function POST(req: Request) {
   const bnsData = lastUserMsg ? detectAndInjectBNSData(lastUserMsg.content) : "";
 
   // Append lookup data to the system prompt
-  const systemPrompt = getSystemPrompt() + bnsData;
+  const systemPrompt = buildSystemPrompt(firmData) + bnsData;
 
   const result = streamText({
     model,
     system: systemPrompt,
     messages: modelMessages,
-    maxOutputTokens: 4096,
+    maxOutputTokens: 65536,
   });
 
   return result.toUIMessageStreamResponse();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { loadFirmData } from "@/lib/firm-store";
 
 interface ExportButtonsProps {
   content: string;
@@ -14,13 +15,14 @@ export default function ExportButtons({ content }: ExportButtonsProps) {
     try {
       const timestamp = new Date().toISOString().slice(0, 10);
       const filename = `legaldesk-${timestamp}`;
+      const profile = loadFirmData().profile;
 
       if (type === "docx") {
         const { exportAsDocx } = await import("@/lib/export-docx");
-        await exportAsDocx(content, filename);
+        await exportAsDocx(content, filename, profile);
       } else if (type === "pdf") {
         const { exportAsPdf } = await import("@/lib/export-pdf");
-        exportAsPdf(content, filename);
+        exportAsPdf(content, filename, profile);
       } else if (type === "excel") {
         const { exportAsExcel } = await import("@/lib/export-excel");
         exportAsExcel(content, filename);
