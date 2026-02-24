@@ -112,6 +112,8 @@ function detectAndInjectBNSData(userText: string): string {
     : "";
 }
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const { messages, firmData: rawFirmData } = await req.json();
   const firmData: FirmData = rawFirmData ?? getDefaultFirmData();
