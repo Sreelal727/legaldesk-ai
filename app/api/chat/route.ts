@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     model,
     system: systemPrompt,
     messages: modelMessages,
-    maxOutputTokens: 65536,
+    maxOutputTokens: 16384,
     temperature: 0.3,
   });
 
