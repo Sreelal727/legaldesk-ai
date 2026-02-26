@@ -36,6 +36,12 @@ export function loadFirmData(): FirmData {
     }
     const data = JSON.parse(stored) as FirmData;
     if (!data.opinionTemplates) data.opinionTemplates = [];
+    // Backward compat: add cnrNumber to cases that don't have it
+    if (data.cases) {
+      for (const c of data.cases) {
+        if (c.cnrNumber === undefined) c.cnrNumber = "";
+      }
+    }
     return data;
   } catch {
     return getDefaultFirmData();

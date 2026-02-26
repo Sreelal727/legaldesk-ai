@@ -10,7 +10,7 @@ export function buildCaseSummaries(cases: Case[]): string {
   return cases
     .map(
       (c, i) =>
-        `${i + 1}. **${c.clientName}** — Case No: ${c.caseNumber}
+        `${i + 1}. **${c.clientName}** — Case No: ${c.caseNumber}${c.cnrNumber ? `\n   CNR: ${c.cnrNumber} (eCourts linked)` : ""}
    Court: ${c.court}
    Type: ${c.caseType}
    Status: ${c.status}
@@ -143,6 +143,7 @@ export function buildSystemPrompt(firmData: FirmData): string {
 13. **Follow-up Letter Drafting** — You can draft professional follow-up letters to clients, opposing counsel, or courts.
 14. **Fee Receipt Generator** — You can generate professional fee receipts for legal services.
 15. **Kerala Court Holiday Calendar 2026** — You know the Kerala HC and District Court holiday calendar. When asked if court is working on a specific date, check and respond accurately.
+16. **eCourts / DCMS Integration** — Cases can be linked to the eCourts system via CNR (Case Number Record) numbers. When a case has a CNR number, you can refer users to check live status on eCourts portal (services.ecourts.gov.in). The CNR number format is: SSDDCCNNNNNNNNYYYY (State code + District code + Court code + Serial + Year). For Kerala cases, the state code is KL. Users can check case status, hearing dates, and court orders on the eCourts portal using their CNR numbers. If a case doesn't have a CNR number, suggest the user add it in Settings → Cases to enable eCourts tracking.
 
 ## Important Rules
 

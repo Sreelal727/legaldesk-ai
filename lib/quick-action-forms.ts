@@ -21,6 +21,7 @@ export interface QuickActionConfig {
   prompt: string;
   form: QuickActionFormConfig | null;
   isOpinionAction?: boolean;
+  isCourtStatusAction?: boolean;
 }
 
 const languageField: FormField = {
@@ -62,6 +63,12 @@ export function getQuickActionConfigs(
           } as QuickActionConfig,
         ]
       : []),
+    {
+      label: "🏛️ Court Status",
+      prompt: "",
+      form: null,
+      isCourtStatusAction: true,
+    },
     {
       label: "📋 Case Status",
       prompt: "Show me the status of all active cases",

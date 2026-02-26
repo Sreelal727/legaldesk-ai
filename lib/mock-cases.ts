@@ -7,6 +7,7 @@ export interface PendingTask {
 export interface Case {
   clientName: string;
   caseNumber: string;
+  cnrNumber: string;
   court: string;
   caseType: string;
   status: string;
@@ -21,6 +22,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Rajesh Kumar",
     caseNumber: "OS 1234/2025",
+    cnrNumber: "KLER020012342025",
     court: "Kerala High Court, Ernakulam",
     caseType: "Civil — Property Dispute",
     status: "Hearing Scheduled",
@@ -38,6 +40,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Meera Thomas",
     caseNumber: "Crl.A 567/2025",
+    cnrNumber: "KLKT010005672025",
     court: "District Court, Kottayam",
     caseType: "Criminal — Cheque Bounce (NI Act 138)",
     status: "Awaiting Judgment",
@@ -54,6 +57,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Anil Krishnan",
     caseNumber: "MC 890/2025",
+    cnrNumber: "",
     court: "Family Court, Thiruvananthapuram",
     caseType: "Family — Divorce Petition",
     status: "Mediation in Progress",
@@ -71,6 +75,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Fatima Begum",
     caseNumber: "WP(C) 2345/2025",
+    cnrNumber: "KLER020023452025",
     court: "Kerala High Court, Ernakulam",
     caseType: "Civil — Writ Petition",
     status: "Filed — Admission Pending",
@@ -87,6 +92,7 @@ export const mockCases: Case[] = [
   {
     clientName: "George Varghese",
     caseNumber: "CC 456/2024",
+    cnrNumber: "KLAL010004562024",
     court: "Judicial First Class Magistrate Court, Alappuzha",
     caseType: "Criminal — Motor Vehicle Accident",
     status: "Evidence Stage",
@@ -104,6 +110,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Sarita Devi",
     caseNumber: "EP 789/2025",
+    cnrNumber: "",
     court: "District Court, Palakkad",
     caseType: "Civil — Execution Petition",
     status: "Decree Under Execution",
@@ -120,6 +127,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Vineeth Menon",
     caseNumber: "OP 112/2026",
+    cnrNumber: "",
     court: "Kerala High Court, Ernakulam",
     caseType: "Civil — Consumer Dispute",
     status: "Counter-affidavit Filed",
@@ -136,6 +144,7 @@ export const mockCases: Case[] = [
   {
     clientName: "Amina Fathima",
     caseNumber: "RP 334/2025",
+    cnrNumber: "KLKK010003342025",
     court: "Rent Control Court, Kozhikode",
     caseType: "Civil — Rent/Eviction",
     status: "Tenant's Reply Awaited",

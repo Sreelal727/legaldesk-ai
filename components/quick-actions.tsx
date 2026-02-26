@@ -8,6 +8,7 @@ interface QuickActionsProps {
   onAction: (text: string) => void;
   onFormOpen: (config: QuickActionFormConfig) => void;
   onOpinionOpen: () => void;
+  onCourtStatusOpen: () => void;
   isLoading: boolean;
   cases: Case[];
   opinionTemplates: OpinionTemplate[];
@@ -17,6 +18,7 @@ export default function QuickActions({
   onAction,
   onFormOpen,
   onOpinionOpen,
+  onCourtStatusOpen,
   isLoading,
   cases,
   opinionTemplates,
@@ -26,6 +28,8 @@ export default function QuickActions({
   const handleClick = (action: (typeof configs)[number]) => {
     if (action.isOpinionAction) {
       onOpinionOpen();
+    } else if (action.isCourtStatusAction) {
+      onCourtStatusOpen();
     } else if (action.form) {
       onFormOpen(action.form);
     } else {

@@ -9,6 +9,7 @@ import QuickActions from "@/components/quick-actions";
 import QuickActionForm from "@/components/quick-action-form";
 import type { QuickActionFormConfig } from "@/lib/quick-action-forms";
 import OpinionGenerator from "@/components/opinion-generator";
+import CourtStatusTracker from "@/components/court-status-tracker";
 import { loadFirmData } from "@/lib/firm-store";
 import Link from "next/link";
 
@@ -61,6 +62,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [activeForm, setActiveForm] = useState<QuickActionFormConfig | null>(null);
   const [showOpinionGenerator, setShowOpinionGenerator] = useState(false);
+  const [showCourtStatus, setShowCourtStatus] = useState(false);
   const isLoading = status === "streaming" || status === "submitted";
 
   const handleSend = (text: string) => {
@@ -146,6 +148,7 @@ export default function ChatPage() {
         onAction={handleSend}
         onFormOpen={handleFormOpen}
         onOpinionOpen={() => setShowOpinionGenerator(true)}
+        onCourtStatusOpen={() => setShowCourtStatus(true)}
         isLoading={isLoading}
         cases={firmData.cases}
         opinionTemplates={firmData.opinionTemplates}
@@ -178,6 +181,14 @@ export default function ChatPage() {
             setShowOpinionGenerator(false);
             handleSend(prompt);
           }}
+        />
+      )}
+
+      {/* Court Status Tracker Modal */}
+      {showCourtStatus && (
+        <CourtStatusTracker
+          cases={firmData.cases}
+          onClose={() => setShowCourtStatus(false)}
         />
       )}
     </div>

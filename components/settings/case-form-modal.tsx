@@ -12,6 +12,7 @@ interface CaseFormModalProps {
 const emptyCase: Case = {
   clientName: "",
   caseNumber: "",
+  cnrNumber: "",
   court: "",
   caseType: "",
   status: "",
@@ -91,6 +92,18 @@ export default function CaseFormModal({ initialCase, onSave, onClose }: CaseForm
           </div>
 
           <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">CNR Number (eCourts)</label>
+              <input
+                type="text"
+                value={form.cnrNumber}
+                onChange={(e) => update("cnrNumber", e.target.value.toUpperCase())}
+                placeholder="e.g. KLER020012342025"
+                maxLength={16}
+                className={inputClass}
+              />
+              <p className="text-[10px] text-gray-400 mt-0.5">16-char eCourts CNR for court status tracking</p>
+            </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Court</label>
               <input type="text" value={form.court} onChange={(e) => update("court", e.target.value)} placeholder="e.g. Kerala High Court" className={inputClass} />

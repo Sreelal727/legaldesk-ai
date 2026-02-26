@@ -62,9 +62,16 @@ export default function CasesManager({ cases, onChange }: CasesManagerProps) {
             className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg"
           >
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {c.clientName}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {c.clientName}
+                </p>
+                {c.cnrNumber && (
+                  <span className="shrink-0 px-1 py-0.5 bg-green-50 text-green-700 text-[9px] font-medium rounded">
+                    eCourts
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500 truncate">
                 {c.caseNumber} &middot; {c.court}
               </p>
