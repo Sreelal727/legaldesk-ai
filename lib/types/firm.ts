@@ -32,6 +32,32 @@ export interface OpinionTemplate {
   createdAt: string;
 }
 
+export interface CourtHearing {
+  date: string;
+  purpose: string;
+  judge: string;
+}
+
+export interface CourtOrder {
+  date: string;
+  details: string;
+}
+
+export interface CourtDataCache {
+  lastSynced: string;
+  caseStatus: string;
+  nextHearingDate: string;
+  courtAndJudge: string;
+  petitioners: string;
+  respondents: string;
+  filingDate: string;
+  registrationNumber: string;
+  registrationDate: string;
+  firstHearingDate: string;
+  caseHistory: CourtHearing[];
+  orders: CourtOrder[];
+}
+
 export interface FirmData {
   profile: FirmProfile;
   cases: Case[];

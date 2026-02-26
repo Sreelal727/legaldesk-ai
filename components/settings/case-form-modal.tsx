@@ -21,6 +21,7 @@ const emptyCase: Case = {
   advocate: "",
   description: "",
   pendingTasks: [],
+  courtDataCache: null,
 };
 
 const emptyTask: PendingTask = { task: "", deadline: "", priority: "Medium" };

@@ -1,6 +1,8 @@
 // eCourts India integration utilities
 // CNR Number format: SSDDCCNNNNNNNNYYYY (SS=state, DD=district, CC=court, NNNNNNNN=serial, YYYY=year)
 
+import type { CourtDataCache } from "./types/firm";
+
 export interface KeralaDistrict {
   name: string;
   code: string;
@@ -61,7 +63,6 @@ export function isValidCNR(cnr: string): boolean {
 export function formatCNR(cnr: string): string {
   const cleaned = cnr.replace(/\s/g, "").toUpperCase();
   if (cleaned.length !== 16) return cnr;
-  // KLЕР020012342025 → KLER-02-0012342025
   return `${cleaned.slice(0, 4)}-${cleaned.slice(4, 6)}-${cleaned.slice(6)}`;
 }
 
@@ -78,4 +79,86 @@ export function getDistrictCourtUrl(districtName: string): string {
  */
 export function countLinkedCases(cases: { cnrNumber: string }[]): number {
   return cases.filter((c) => c.cnrNumber && c.cnrNumber.trim().length > 0).length;
+}
+
+/**
+ * Check if a case's cached data is from today
+ */
+export function isCacheFresh(cache: CourtDataCache | null | undefined): boolean {
+  if (!cache?.lastSynced) return false;
+  const today = new Date().toISOString().split("T")[0];
+  return cache.lastSynced.startsWith(today);
+}
+
+/**
+ * Fetch court data from our server-side proxy
+ * Returns normalized court data or throws an error
+ */
+export async function fetchCourtData(cnrNumber: string): Promise<{
+  success: boolean;
+  data?: CourtDataCache;
+  error?: string;
+}> {
+  try {
+    const res = await fetch("/api/ecourts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cnrNumber }),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok || !json.success) {
+      return {
+        success: false,
+        error: json.error || `API error ${res.status}`,
+      };
+    }
+
+    const d = json.data;
+    const cache: CourtDataCache = {
+      lastSynced: new Date().toISOString(),
+      caseStatus: String(d.caseStatus || ""),
+      nextHearingDate: String(d.nextHearingDate || ""),
+      courtAndJudge: String(d.courtAndJudge || ""),
+      petitioners: String(d.petitioners || ""),
+      respondents: String(d.respondents || ""),
+      filingDate: String(d.filingDate || ""),
+      registrationNumber: String(d.registrationNumber || ""),
+      registrationDate: String(d.registrationDate || ""),
+      firstHearingDate: String(d.firstHearingDate || ""),
+      caseHistory: Array.isArray(d.caseHistory) ? d.caseHistory : [],
+      orders: Array.isArray(d.orders) ? d.orders : [],
+    };
+
+    return { success: true, data: cache };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Network error",
+    };
+  }
+}
+
+/**
+ * Get cases that need syncing today (have CNR but no fresh cache)
+ * Sorted by next hearing date (most urgent first)
+ */
+export function getCasesNeedingSync(
+  cases: { cnrNumber: string; nextHearingDate: string; courtDataCache?: CourtDataCache | null }[]
+): number[] {
+  const indices: { index: number; urgency: number }[] = [];
+  const now = Date.now();
+
+  cases.forEach((c, i) => {
+    if (!c.cnrNumber || c.cnrNumber.trim().length === 0) return;
+    if (isCacheFresh(c.courtDataCache)) return;
+
+    const hearingTime = c.nextHearingDate ? new Date(c.nextHearingDate).getTime() : now + 365 * 86400000;
+    indices.push({ index: i, urgency: hearingTime - now });
+  });
+
+  // Sort by urgency — most urgent (soonest hearing) first
+  indices.sort((a, b) => a.urgency - b.urgency);
+  return indices.map((x) => x.index);
 }

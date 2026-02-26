@@ -16,6 +16,7 @@ export interface Case {
   advocate: string;
   description: string;
   pendingTasks: PendingTask[];
+  courtDataCache?: import("./types/firm").CourtDataCache | null;
 }
 
 export const mockCases: Case[] = [

@@ -9,15 +9,43 @@ import { getHolidaysSummary } from "./court-holidays";
 export function buildCaseSummaries(cases: Case[]): string {
   return cases
     .map(
-      (c, i) =>
-        `${i + 1}. **${c.clientName}** — Case No: ${c.caseNumber}${c.cnrNumber ? `\n   CNR: ${c.cnrNumber} (eCourts linked)` : ""}
+      (c, i) => {
+        let summary = `${i + 1}. **${c.clientName}** — Case No: ${c.caseNumber}${c.cnrNumber ? `\n   CNR: ${c.cnrNumber} (eCourts linked)` : ""}
    Court: ${c.court}
    Type: ${c.caseType}
    Status: ${c.status}
    Next Hearing: ${c.nextHearingDate}
    Opposing Party: ${c.opposingParty}
    Advocate: ${c.advocate}
-   Details: ${c.description}`
+   Details: ${c.description}`;
+
+        // Include cached eCourts data if available
+        if (c.courtDataCache) {
+          const cd = c.courtDataCache;
+          summary += `\n   [eCourts Data — synced ${cd.lastSynced.split("T")[0]}]`;
+          if (cd.courtAndJudge) summary += `\n   Judge: ${cd.courtAndJudge}`;
+          if (cd.petitioners) summary += `\n   Petitioners: ${cd.petitioners}`;
+          if (cd.respondents) summary += `\n   Respondents: ${cd.respondents}`;
+          if (cd.filingDate) summary += `\n   Filing Date: ${cd.filingDate}`;
+          if (cd.registrationNumber) summary += `\n   Reg. No: ${cd.registrationNumber}`;
+          if (cd.caseHistory.length > 0) {
+            const recent = cd.caseHistory.slice(-3);
+            summary += `\n   Recent Hearings:`;
+            for (const h of recent) {
+              summary += `\n     - ${h.date}: ${h.purpose}${h.judge ? ` (${h.judge})` : ""}`;
+            }
+          }
+          if (cd.orders.length > 0) {
+            const recentOrders = cd.orders.slice(-2);
+            summary += `\n   Recent Orders:`;
+            for (const o of recentOrders) {
+              summary += `\n     - ${o.date}: ${o.details}`;
+            }
+          }
+        }
+
+        return summary;
+      }
     )
     .join("\n\n");
 }

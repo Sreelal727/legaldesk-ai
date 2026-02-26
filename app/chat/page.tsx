@@ -10,7 +10,7 @@ import QuickActionForm from "@/components/quick-action-form";
 import type { QuickActionFormConfig } from "@/lib/quick-action-forms";
 import OpinionGenerator from "@/components/opinion-generator";
 import CourtStatusTracker from "@/components/court-status-tracker";
-import { loadFirmData } from "@/lib/firm-store";
+import { loadFirmData, saveFirmData } from "@/lib/firm-store";
 import Link from "next/link";
 
 const STORAGE_KEY = "legaldesk-chat-messages";
@@ -35,7 +35,7 @@ function saveMessages(messages: UIMessage[]) {
 }
 
 export default function ChatPage() {
-  const [firmData] = useState(() => loadFirmData());
+  const [firmData, setFirmData] = useState(() => loadFirmData());
   const [initialMessages] = useState<UIMessage[]>(() => loadMessages());
   const [transport] = useState(
     () =>
@@ -188,6 +188,11 @@ export default function ChatPage() {
       {showCourtStatus && (
         <CourtStatusTracker
           cases={firmData.cases}
+          onCasesUpdate={(updatedCases) => {
+            const updated = { ...firmData, cases: updatedCases };
+            setFirmData(updated);
+            saveFirmData(updated);
+          }}
           onClose={() => setShowCourtStatus(false)}
         />
       )}
