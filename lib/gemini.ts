@@ -1,7 +1,7 @@
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-export const model = anthropic("claude-haiku-4-5-20251001");
+export const model = openrouter("anthropic/claude-3.5-haiku");
