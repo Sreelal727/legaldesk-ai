@@ -128,13 +128,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model,
-    system: {
-      role: "system",
-      content: systemPrompt,
-      providerOptions: {
-        anthropic: { cacheControl: { type: "ephemeral" } },
-      },
-    },
+    system: systemPrompt,
     messages: modelMessages,
     maxOutputTokens: 8192,
     temperature: 0.3,

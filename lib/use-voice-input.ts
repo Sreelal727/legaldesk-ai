@@ -145,35 +145,38 @@ export function useVoiceInput(
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = "";
-      let final = "";
+      let newFinal = "";
 
-      for (let i = 0; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         const transcript = result[0].transcript;
         if (result.isFinal) {
-          final += transcript + " ";
+          newFinal += transcript + " ";
         } else {
           interim += transcript;
         }
       }
 
-      if (final) {
-        finalTextRef.current = final.trim();
-        setFinalText(finalTextRef.current);
-        onInterim?.(finalTextRef.current + (interim ? " " + interim : ""));
+      if (newFinal) {
+        const accumulated = finalTextRef.current
+          ? finalTextRef.current + " " + newFinal.trim()
+          : newFinal.trim();
+        finalTextRef.current = accumulated;
+        setFinalText(accumulated);
       }
 
+      const combined = finalTextRef.current
+        ? finalTextRef.current + (interim ? " " + interim : "")
+        : interim;
+
       if (interim) {
-        const combined = finalTextRef.current
-          ? finalTextRef.current + " " + interim
-          : interim;
         setInterimText(interim);
-        onInterim?.(combined);
       } else {
         setInterimText("");
-        if (finalTextRef.current) {
-          onInterim?.(finalTextRef.current);
-        }
+      }
+
+      if (combined) {
+        onInterim?.(combined);
       }
 
       // Reset the auto-stop timer on each new result
@@ -187,7 +190,11 @@ export function useVoiceInput(
       if (event.error === "aborted" || event.error === "no-speech") {
         return;
       }
-      console.warn("Speech recognition error:", event.error);
+      if (event.error === "not-allowed") {
+        alert("Microphone access was denied. Please allow microphone permission in your browser and try again.");
+      } else {
+        console.warn("Speech recognition error:", event.error);
+      }
       setStatus("idle");
       setInterimText("");
       isStoppingRef.current = false;
